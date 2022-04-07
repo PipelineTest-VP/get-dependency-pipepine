@@ -1,0 +1,23 @@
+name: 'Get organization repos dependency details'
+description: 'Get organization repos dependency details'
+inputs:
+  gthub-org-name:
+    description: 'Github orhanization name'
+    required: true
+    default: ''
+  gthub-username:
+    description: 'Github service account username'
+    required: true
+    default: ''
+  gthub-token:
+    description: 'Github service account token'
+    required: true
+    default: ''
+  dependency-repo-name:
+    description: 'Github repo name for updating the dependency details'
+    required: false
+    default: ''
+
+runs:
+  using: 'node12'
+  main: 'index.js'

@@ -1,4 +1,4 @@
-name: CI
+name: DependencyPipeline
 
 # Controls when the workflow will run
 on:
@@ -10,11 +10,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
-        with: 
-          path: pipeline
+      # Checks out pipeline repository
+      - name: 'Checkout pipeline repo'
+        uses: actions/checkout@v3
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
+      # Updated the dependency details repo
+      - name: check the diff for dependencies in package.json
+        uses: ./.github/actions/get-dependencies
+        with:
+          gthub-org-name: ${{ secrets.GTHUB_ORGNAME }}
+          gthub-username: ${{ secrets.GTHUB_USERNAME }}
+          gthub-token: ${{ secrets.GTHUB_TOKEN }}
+          dependency-repo-name: 'dependency-details'
