@@ -62,7 +62,13 @@ async function main() {
                     const jsonFromXml = await convert.xml2json(pomXml, {compact: true, spaces: 4});
                     console.log("jsonFromXml dependency: ", JSON.parse(jsonFromXml).project.dependencies);
                     
-                    const repoDependcies = getMavenRepoDependencies(JSON.parse(jsonFromXml).project.dependencies.dependency);
+                    let repoDependcies = [];
+                    if(JSON.parse(jsonFromXml).project.dependencies) {
+                        repoDependcies = JSON.parse(jsonFromXml).project.dependencies.dependency;
+                    } else if(JSON.parse(jsonFromXml).project.dependencyManagement) {
+                        repoDependcies = JSON.parse(jsonFromXml).project.dependencyManagement.dependencies.dependency;
+                    }
+                    
                     mavenDependencies.dependencies = mavenDependencies.dependencies.concat(repoDependcies);
                     mavenDependenciesWithRepoName.push({
                         repoName: repoName,
