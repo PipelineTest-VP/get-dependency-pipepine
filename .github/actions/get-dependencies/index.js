@@ -14,6 +14,11 @@ async function main() {
 
         octokit = new Octokit({ auth: gthubToken });
 
+        const pomXmlTemplate = fs.readFileSync('./pomxml.template', 'utf8');
+        const jsonFromPomXmlTemplate = await convert.xml2json(pomXmlTemplate, {compact: true, spaces: 4});
+        let pomXmlTemplateJson = JSON.parse(jsonFromPomXmlTemplate);
+        console.log(`pomXmlTemplateJson: ${JSON.stringify(pomXmlTemplateJson)}`);
+
         await shell.mkdir('-p', 'repos');
         await shell.cd('repos');
 
@@ -109,6 +114,12 @@ async function main() {
         });
         console.log(`uniqueMavenDependencies: ${JSON.stringify(uniqueMavenDependencies)}`);
 
+        pomXmlTemplateJson.project.dependencies = {};
+        pomXmlTemplateJson.project.dependencies.dependency = uniqueMavenDependencies;
+
+        let xmlOptions = {compact: true, ignoreComment: true, spaces: 4};
+        var pomXmlData = await convert.json2xml(pomXmlTemplateJson, xmlOptions);
+
         const dependencyRepoURL = `https://${gthubUsername}:${gthubToken}@github.com/${orgName}/${dependencyRepoName}.git`
         await shell.exec(`git clone ${dependencyRepoURL}`);
 
@@ -118,6 +129,7 @@ async function main() {
         fs.writeFileSync(`./node_dependencies_with_repo.json`, JSON.stringify(nodeDependenciesWithRepoName, null, 2));
         fs.writeFileSync(`./maven_dependencies.json`, JSON.stringify(uniqueMavenDependencies, null, 2));
         fs.writeFileSync(`./maven_dependencies_with_repo.json`, JSON.stringify(mavenDependenciesWithRepoName, null, 2));
+        fs.writeFileSync('./pom.xml', pomXmlData);
 
         await shell.exec(`git add .`);
         await shell.exec(`git commit -m "Updated dependency details"`);
