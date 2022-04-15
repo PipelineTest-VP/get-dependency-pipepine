@@ -62,7 +62,7 @@ async function main() {
                     const jsonFromXml = await convert.xml2json(pomXml, {compact: true, spaces: 4});
                     console.log("jsonFromXml dependency: ", JSON.parse(jsonFromXml).project.dependencies);
                     
-                    const repoDependcies = getMavenRepoDependencies(JSON.parse(jsonFromXml).project.dependencies);
+                    const repoDependcies = getMavenRepoDependencies(JSON.parse(jsonFromXml).project.dependencies.dependency);
                     mavenDependencies.dependencies = mavenDependencies.dependencies.concat(repoDependcies);
                     mavenDependenciesWithRepoName.push({
                         repoName: repoName,
@@ -169,18 +169,32 @@ function getMavenRepoDependencies(dependencies) {
         if(Array.isArray(dependencies)) {
             for(let i = 0; i < dependencies.length; i++) {
                 const dependency = dependencies[i];
-                mavenDependencies.push({
-                    groupId: dependency.$.groupId._text,
-                    artifactId: dependency.$.artifactId._text,
-                    version: dependency.$.version._text
-                });
+                if(dependency.version) {
+                    mavenDependencies.push({
+                        groupId: dependency.groupId._text,
+                        artifactId: dependency.artifactId._text,
+                        version: dependency.version._text
+                    });
+                } else {
+                    mavenDependencies.push({
+                        groupId: dependency.groupId._text,
+                        artifactId: dependency.artifactId._text
+                    });
+                }
             }
         } else {
-            mavenDependencies.push({
-                groupId: dependencies.dependency.groupId._text,
-                artifactId: dependencies.dependency.artifactId._text,
-                version: dependencies.dependency.version._text
-            });
+            if(dependencies.version) {
+                mavenDependencies.push({
+                    groupId: dependencies.groupId._text,
+                    artifactId: dependencies.artifactId._text,
+                    version: dependencies.version._text
+                });
+            } else {
+                mavenDependencies.push({
+                    groupId: dependencies.groupId._text,
+                    artifactId: dependencies.artifactId._text
+                });
+            }
         }
     }
     return mavenDependencies;
