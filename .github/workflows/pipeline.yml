@@ -21,4 +21,6 @@ jobs:
           gthub-org-name: ${{ secrets.GTHUB_ORGNAME }}
           gthub-username: ${{ secrets.GTHUB_USERNAME }}
           gthub-token: ${{ secrets.GTHUB_TOKEN }}
+          gthub-user: ${{secrets.GTHUB_USER}}
+          gthub-user-email: ${{secrets.GTHUB_USER_EMAIL}}
           dependency-repo-name: 'dependency-details'
