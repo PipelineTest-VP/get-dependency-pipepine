@@ -131,6 +131,9 @@ async function main() {
         fs.writeFileSync(`./maven_dependencies_with_repo.json`, JSON.stringify(mavenDependenciesWithRepoName, null, 2));
         fs.writeFileSync('./pom.xml', pomXmlData);
 
+        
+        await shell.exec(`git config user.email "vishnuprabhakar7@gmail.com"`);
+        await shell.exec(`git config user.name "Vishnu Prabhakar"`);
         await shell.exec(`git add .`);
         await shell.exec(`git commit -m "Updated dependency details"`);
         await shell.exec(`git push origin main`);
