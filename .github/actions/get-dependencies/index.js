@@ -10,6 +10,8 @@ async function main() {
         const orgName = core.getInput('gthub-org-name');
         const gthubUsername = core.getInput('gthub-username');
         const gthubToken = core.getInput('gthub-token');
+        const gthubUser = core.getInput('gthub-user');
+        const gthubUserEmail = core.getInput('gthub-user-email');
         const dependencyRepoName = core.getInput('dependency-repo-name') || "dependency-details";
 
         octokit = new Octokit({ auth: gthubToken });
@@ -132,8 +134,8 @@ async function main() {
         fs.writeFileSync('./pom.xml', pomXmlData);
 
         
-        await shell.exec(`git config user.email "vishnuprabhakar7@gmail.com"`);
-        await shell.exec(`git config user.name "Vishnu Prabhakar"`);
+        await shell.exec(`git config user.email "${gthubUserEmail}"`);
+        await shell.exec(`git config user.name "${gthubUser}"`);
         await shell.exec(`git add .`);
         await shell.exec(`git commit -m "Updated dependency details"`);
         await shell.exec(`git push origin main`);
