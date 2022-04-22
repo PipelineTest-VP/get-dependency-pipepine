@@ -9,6 +9,14 @@ inputs:
     description: 'Github service account username'
     required: true
     default: ''
+  gthub-user:
+    description: 'Github service account user'
+    required: true
+    default: ''
+  gthub-user-email:
+    description: 'Github service account user email'
+    required: true
+    default: ''
   gthub-token:
     description: 'Github service account token'
     required: true
