@@ -6,7 +6,7 @@ const { Octokit } = require("@octokit/rest");
 const xml2js = require('xml2js');
 
 const parser = new xml2js.Parser({
-    explicitArray: true
+    explicitArray: false
 });
 const builder = new xml2js.Builder();
 
