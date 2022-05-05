@@ -2,7 +2,14 @@ const core = require('@actions/core');
 const shell = require('shelljs');
 const fs = require('fs');
 const { Octokit } = require("@octokit/rest");
-const convert = require('xml-js');
+
+const xml2js = require('xml2js');
+
+const parser = new xml2js.Parser({
+    explicitArray: true
+});
+const builder = new xml2js.Builder();
+
 let octokit;
 
 async function main() {
@@ -17,8 +24,7 @@ async function main() {
         octokit = new Octokit({ auth: gthubToken });
 
         const pomXmlTemplate = fs.readFileSync('./pomxml.template', 'utf8');
-        const jsonFromPomXmlTemplate = await convert.xml2json(pomXmlTemplate, {compact: true, spaces: 4});
-        let pomXmlTemplateJson = JSON.parse(jsonFromPomXmlTemplate);
+        let pomXmlTemplateJson = await parser.parseStringPromise(pomXmlTemplate);
         console.log(`pomXmlTemplateJson: ${JSON.stringify(pomXmlTemplateJson)}`);
 
         await shell.mkdir('-p', 'repos');
@@ -30,8 +36,11 @@ async function main() {
         let nodeDependenciesWithRepoName = [];
 
         let mavenDependencies = {
-            dependencies: []
+            dependencies: {
+                dependency: []
+            }
         };
+
         let mavenDependenciesWithRepoName = [];
 
         for(let loopVar = 1; loopVar < 1000; loopVar++) {
@@ -66,17 +75,24 @@ async function main() {
 
                 if(fs.existsSync(`./${repoName}/pom.xml`)) {
                     const pomXml = fs.readFileSync(`./${repoName}/pom.xml`, 'utf8');
-                    const jsonFromXml = await convert.xml2json(pomXml, {compact: true, spaces: 4});
-                    console.log("jsonFromXml dependency: ", JSON.parse(jsonFromXml).project.dependencies);
+                    const jsonFromXml = await parser.parseStringPromise(pomXml);
+                    console.log("jsonFromXml dependency: ", jsonFromXml.project.dependencies);
                     
-                    let repoDependcies = [];
-                    if(JSON.parse(jsonFromXml).project.dependencies) {
-                        repoDependcies = JSON.parse(jsonFromXml).project.dependencies.dependency;
-                    } else if(JSON.parse(jsonFromXml).project.dependencyManagement) {
-                        repoDependcies = JSON.parse(jsonFromXml).project.dependencyManagement.dependencies.dependency;
+                    let repoDependcies;
+                    if(jsonFromXml.project.dependencies && jsonFromXml.project.dependencies.dependency) {
+                        repoDependcies = jsonFromXml.project.dependencies.dependency;
+                    } else if(jsonFromXml.project.dependencyManagement && jsonFromXml.project.dependencyManagement.dependencies && jsonFromXml.project.dependencyManagement.dependencies.dependency) {
+                        repoDependcies = jsonFromXml.project.dependencyManagement.dependencies.dependency;
+                    }
+
+                    if(Array.isArray(repoDependcies)) {
+                        mavenDependencies.dependencies.dependency = mavenDependencies.dependencies.dependency.concat(repoDependcies);
+                    } else {
+                        if(repoDependcies) {
+                            mavenDependencies.dependencies.dependency.push(repoDependcies);
+                        }
                     }
                     
-                    mavenDependencies.dependencies = mavenDependencies.dependencies.concat(repoDependcies);
                     mavenDependenciesWithRepoName.push({
                         repoName: repoName,
                         dependencies: repoDependcies
@@ -111,16 +127,16 @@ async function main() {
         console.log(`uniqueNodeDependencies: ${JSON.stringify(uniqueNodeDependencies)}`);
 
         // get unique maven dependencies
-        const uniqueMavenDependencies = mavenDependencies.dependencies.filter((item, pos) => {
-            return mavenDependencies.dependencies.indexOf(item) == pos;
+        const uniqueMavenDependencies = mavenDependencies.dependencies.dependency.filter((item, pos) => {
+            return mavenDependencies.dependencies.dependency.indexOf(item) == pos;
         });
         console.log(`uniqueMavenDependencies: ${JSON.stringify(uniqueMavenDependencies)}`);
 
         pomXmlTemplateJson.project.dependencies = {};
         pomXmlTemplateJson.project.dependencies.dependency = uniqueMavenDependencies;
+        console.log(`pomXmlTemplateJson: ${JSON.stringify(pomXmlTemplateJson)}`);
 
-        let xmlOptions = {compact: true, ignoreComment: true, spaces: 4};
-        var pomXmlData = await convert.json2xml(pomXmlTemplateJson, xmlOptions);
+        const pomXmlData = builder.buildObject(pomXmlTemplateJson);
 
         const dependencyRepoURL = `https://${gthubUsername}:${gthubToken}@github.com/${orgName}/${dependencyRepoName}.git`
         await shell.exec(`git clone ${dependencyRepoURL}`);
@@ -184,43 +200,6 @@ function getNodeRepoDependencies(packageJson) {
     }
     
     return dependencies;
-}
-
-function getMavenRepoDependencies(dependencies) {
-    let mavenDependencies = [];
-    if(dependencies) {
-        if(Array.isArray(dependencies)) {
-            for(let i = 0; i < dependencies.length; i++) {
-                const dependency = dependencies[i];
-                if(dependency.version) {
-                    mavenDependencies.push({
-                        groupId: dependency.groupId._text,
-                        artifactId: dependency.artifactId._text,
-                        version: dependency.version._text
-                    });
-                } else {
-                    mavenDependencies.push({
-                        groupId: dependency.groupId._text,
-                        artifactId: dependency.artifactId._text
-                    });
-                }
-            }
-        } else {
-            if(dependencies.version) {
-                mavenDependencies.push({
-                    groupId: dependencies.groupId._text,
-                    artifactId: dependencies.artifactId._text,
-                    version: dependencies.version._text
-                });
-            } else {
-                mavenDependencies.push({
-                    groupId: dependencies.groupId._text,
-                    artifactId: dependencies.artifactId._text
-                });
-            }
-        }
-    }
-    return mavenDependencies;
 }
 
 main();
