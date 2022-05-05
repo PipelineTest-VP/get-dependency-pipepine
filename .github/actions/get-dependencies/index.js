@@ -25,7 +25,6 @@ async function main() {
 
         const pomXmlTemplate = fs.readFileSync('./pomxml.template', 'utf8');
         let pomXmlTemplateJson = await parser.parseStringPromise(pomXmlTemplate);
-        console.log(`pomXmlTemplateJson: ${JSON.stringify(pomXmlTemplateJson)}`);
 
         await shell.mkdir('-p', 'repos');
         await shell.cd('repos');
@@ -63,7 +62,6 @@ async function main() {
                 
                 if(fs.existsSync(`./${repoName}/package.json`)) {
                     const packageJson = JSON.parse(fs.readFileSync(`./${repoName}/package.json`, 'utf8'));
-                    console.log(`package.json: ${JSON.stringify(packageJson)}`);
                     
                     const repoDependcies = getNodeRepoDependencies(packageJson);
                     nodeDependencies.dependencies = nodeDependencies.dependencies.concat(repoDependcies);
@@ -76,7 +74,7 @@ async function main() {
                 if(fs.existsSync(`./${repoName}/pom.xml`)) {
                     const pomXml = fs.readFileSync(`./${repoName}/pom.xml`, 'utf8');
                     const jsonFromXml = await parser.parseStringPromise(pomXml);
-                    console.log("jsonFromXml dependency: ", jsonFromXml.project.dependencies);
+                    console.log("jsonFromXml : ", jsonFromXml);
                     
                     let repoDependcies;
                     if(jsonFromXml.project.dependencies && jsonFromXml.project.dependencies.dependency) {
@@ -84,6 +82,7 @@ async function main() {
                     } else if(jsonFromXml.project.dependencyManagement && jsonFromXml.project.dependencyManagement.dependencies && jsonFromXml.project.dependencyManagement.dependencies.dependency) {
                         repoDependcies = jsonFromXml.project.dependencyManagement.dependencies.dependency;
                     }
+                    console.log("repoDependcies : ", repoDependcies);
 
                     if(Array.isArray(repoDependcies)) {
                         mavenDependencies.dependencies.dependency = mavenDependencies.dependencies.dependency.concat(repoDependcies);
@@ -104,7 +103,6 @@ async function main() {
         await shell.rm('-rf', 'repos');
 
         const dependencyRepoExists = await getDependencyRepoStatus(orgName, dependencyRepoName);
-        console.log(`dependencyRepoExists: ${dependencyRepoExists}`);
 
         if(!dependencyRepoExists) {
             // create the repository
@@ -115,7 +113,6 @@ async function main() {
                 private: true,
                 auto_init: true
             });
-            console.log(`dependencyRepoCreResp: ${JSON.stringify(dependencyRepoCreResp.data)}`);
         }
         shell.mkdir('-p', 'temp');
         shell.cd('temp');
@@ -124,7 +121,6 @@ async function main() {
         const uniqueNodeDependencies = nodeDependencies.dependencies.filter((item, pos) => {
             return nodeDependencies.dependencies.indexOf(item) == pos;
         });
-        console.log(`uniqueNodeDependencies: ${JSON.stringify(uniqueNodeDependencies)}`);
 
         // get unique maven dependencies
         const uniqueMavenDependencies = mavenDependencies.dependencies.dependency.filter((item, pos) => {
@@ -171,7 +167,6 @@ async function getDependencyRepoStatus(orgName, dependencyRepoName) {
             owner: orgName,
             repo: dependencyRepoName
         });
-        console.log(`dependencyRepoStatus: ${JSON.stringify(response.data)}`);
 
         return true;
     } catch (error) {
