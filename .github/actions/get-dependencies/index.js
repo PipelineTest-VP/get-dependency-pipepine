@@ -60,7 +60,7 @@ async function main() {
                 const repoUrl = `https://${gthubUsername}:${gthubToken}@github.com/${repo.full_name}.git`;
                 await shell.exec(`git clone ${repoUrl}`);
                 
-                if(fs.existsSync(`./${repoName}/package.json`)) {
+                if(repoName !== dependencyRepoName && fs.existsSync(`./${repoName}/package.json`)) {
                     const packageJson = JSON.parse(fs.readFileSync(`./${repoName}/package.json`, 'utf8'));
                     
                     const repoDependcies = getNodeRepoDependencies(packageJson);
@@ -71,7 +71,7 @@ async function main() {
                     });
                 }
 
-                if(fs.existsSync(`./${repoName}/pom.xml`)) {
+                if(repoName !== dependencyRepoName && fs.existsSync(`./${repoName}/pom.xml`)) {
                     const pomXml = fs.readFileSync(`./${repoName}/pom.xml`, 'utf8');
                     const jsonFromXml = await parser.parseStringPromise(pomXml);
                     console.log("jsonFromXml : ", jsonFromXml);
