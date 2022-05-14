@@ -125,7 +125,7 @@ async function main() {
         // get unique maven dependencies
         const uniqueMavenDependencies = mavenDependencies.dependencies.dependency.filter((item, pos) => {
             const _value = JSON.stringify(item);
-            return pos === obj.arr.findIndex(obj => {
+            return pos === mavenDependencies.dependencies.dependency.findIndex(obj => {
                 return JSON.stringify(obj) === _value;
             });
             //return mavenDependencies.dependencies.dependency.indexOf(item) == pos;
