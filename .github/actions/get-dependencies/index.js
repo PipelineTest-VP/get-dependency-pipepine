@@ -142,6 +142,54 @@ async function main() {
 
         await shell.cd(dependencyRepoName);
 
+        let existingMavenDependencies = [];
+        if(fs.existsSync(`./maven_dependencies.json`)) {
+            existingMavenDependencies = JSON.parse(fs.readFileSync(`./maven_dependencies.json`, 'utf8'));
+        }
+
+        let existingNodeDependencies = [];
+        if(fs.existsSync(`./node_dependencies.json`)) {
+            existingNodeDependencies = JSON.parse(fs.readFileSync(`./node_dependencies.json`, 'utf8'));
+        }
+
+        let newMavenDependencies = [];
+        for(let i = 0; i < uniqueMavenDependencies.length; i++) {
+            const mavenDependency = uniqueMavenDependencies[i];
+            let mavenDependencyExists = false;
+            for(let j = 0; j < existingMavenDependencies.length; j++) {
+                const existingMavenDependency = existingMavenDependencies[j];
+                if(existingMavenDependency.groupId === mavenDependency.groupId && existingMavenDependency.artifactId === mavenDependency.artifactId) {
+                    if(existingMavenDependency.version  && mavenDependency.version && existingMavenDependency.version === mavenDependency.version) {
+                        mavenDependencyExists = true;
+                        break;
+                    }
+                }
+            }
+            if(!mavenDependencyExists) {
+                newMavenDependencies.push(mavenDependency);
+            }
+        }
+
+        console.log(`newMavenDependencies: ${JSON.stringify(newMavenDependencies)}`);
+
+        let newNodeDependencies = [];
+        for(let i = 0; i < uniqueNodeDependencies.length; i++) {
+            const nodeDependency = uniqueNodeDependencies[i];
+            let nodeDependencyExists = false;
+            for(let j = 0; j < existingNodeDependencies.length; j++) {
+                const existingNodeDependency = existingNodeDependencies[j];
+                if(existingNodeDependency.name === nodeDependency.name && existingNodeDependency.version === nodeDependency.version) {
+                    nodeDependencyExists = true;
+                    break;
+                }
+            }
+            if(!nodeDependencyExists) {
+                newNodeDependencies.push(nodeDependency);
+            }
+        }
+
+        console.log(`newNodeDependencies: ${JSON.stringify(newNodeDependencies)}`);
+
         fs.writeFileSync(`./node_dependencies.json`, JSON.stringify(uniqueNodeDependencies, null, 2));
         fs.writeFileSync(`./node_dependencies_with_repo.json`, JSON.stringify(nodeDependenciesWithRepoName, null, 2));
         fs.writeFileSync(`./maven_dependencies.json`, JSON.stringify(uniqueMavenDependencies, null, 2));
