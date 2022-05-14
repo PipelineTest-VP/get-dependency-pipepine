@@ -164,7 +164,7 @@ async function main() {
                             mavenDependencyExists = true;
                             break;
                         }
-                    } else {
+                    } else if(!existingMavenDependency.version || !mavenDependency.version) {
                         mavenDependencyExists = true;
                         break;
                     }
