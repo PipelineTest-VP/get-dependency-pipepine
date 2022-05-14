@@ -128,7 +128,6 @@ async function main() {
             return pos === mavenDependencies.dependencies.dependency.findIndex(obj => {
                 return JSON.stringify(obj) === _value;
             });
-            //return mavenDependencies.dependencies.dependency.indexOf(item) == pos;
         });
         console.log(`uniqueMavenDependencies: ${JSON.stringify(uniqueMavenDependencies)}`);
 
