@@ -159,7 +159,12 @@ async function main() {
             for(let j = 0; j < existingMavenDependencies.length; j++) {
                 const existingMavenDependency = existingMavenDependencies[j];
                 if(existingMavenDependency.groupId === mavenDependency.groupId && existingMavenDependency.artifactId === mavenDependency.artifactId) {
-                    if(existingMavenDependency.version  && mavenDependency.version && existingMavenDependency.version === mavenDependency.version) {
+                    if((existingMavenDependency.version  && mavenDependency.version)) {
+                        if(existingMavenDependency.version === mavenDependency.version) {
+                            mavenDependencyExists = true;
+                            break;
+                        }
+                    } else {
                         mavenDependencyExists = true;
                         break;
                     }
