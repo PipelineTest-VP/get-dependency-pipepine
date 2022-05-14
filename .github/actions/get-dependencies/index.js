@@ -123,15 +123,13 @@ async function main() {
         });
 
         // get unique maven dependencies
-        //const uniqueMavenDependencies = mavenDependencies.dependencies.dependency.filter((item, pos) => {
-            /*const _value = JSON.stringify(item);
+        const uniqueMavenDependencies = mavenDependencies.dependencies.dependency.filter((item, pos) => {
+            const _value = JSON.stringify(item);
             return pos === obj.arr.findIndex(obj => {
                 return JSON.stringify(obj) === _value;
-            });*/
+            });
             //return mavenDependencies.dependencies.dependency.indexOf(item) == pos;
-        //});
-
-        const uniqueMavenDependencies = [...new Map(mavenDependencies.dependencies.dependency.map((item, key) => [item[key], item])).values()];
+        });
         console.log(`uniqueMavenDependencies: ${JSON.stringify(uniqueMavenDependencies)}`);
 
         pomXmlTemplateJson.project.dependencies = {};
