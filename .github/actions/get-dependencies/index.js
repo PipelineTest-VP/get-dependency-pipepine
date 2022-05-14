@@ -162,6 +162,7 @@ async function main() {
         await shell.rm('-rf', 'temp');
     } catch (error) {
         console.log(error);
+        core.setFailed(error.message);
     }
 }
 
